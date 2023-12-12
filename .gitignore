@@ -54,3 +54,5 @@ Mkfile.old
 dkms.conf
 build
 script
+
+node_modules
