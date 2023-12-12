@@ -30,5 +30,3 @@
 
 #define PIN_TOUCH_INT                16
 #define PIN_TOUCH_RES                21
-
-// #define TOUCH_CS                     16
