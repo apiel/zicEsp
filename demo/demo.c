@@ -82,6 +82,9 @@ int main()
     cfsetispeed(&tty, B115200);
     cfsetospeed(&tty, B115200);
 
+    // cfsetispeed(&tty, B921600);
+    // cfsetospeed(&tty, B921600);
+
     // Save tty settings, also checking for error
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
         printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));

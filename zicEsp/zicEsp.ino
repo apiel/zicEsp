@@ -19,6 +19,11 @@ TouchLib touch(Wire, PIN_IIC_SDA, PIN_IIC_SCL, CTS820_SLAVE_ADDRESS, PIN_TOUCH_R
 void setup(void)
 {
     Serial.begin(115200);
+    // Serial.begin(230400);
+    // Serial1.begin(460800);
+    // Serial1.begin(921600);
+    // Serial2.begin(921600);
+    // Serial2.begin(9600);
     Serial.println("zicEsp");
     // Serial.setTimeout(10);
 
@@ -29,6 +34,8 @@ void setup(void)
     if (!touch.init()) {
         Serial.println("Touch IC not found");
     }
+
+    tft.fillScreen(TFT_BLACK);
 }
 
 const byte numChars = 128;
