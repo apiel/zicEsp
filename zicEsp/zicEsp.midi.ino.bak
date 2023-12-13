@@ -1,3 +1,11 @@
+// build_flags = 
+//     -DARDUINO_USB_CDC_ON_BOOT=1
+//     -DCORE_DEBUG_LEVEL=1
+//     ; -DARDUINO_USB_MSC_ON_BOOT=1
+//     ; -DARDUINO_USB_MODE=1 
+//     -DARDUINO_USB_MODE=0 ; OTG mode   
+
+
 #include "pin_config.h"
 
 // For some weird reason this is not working...
@@ -13,11 +21,39 @@
 #include <TouchLib.h>
 #include <Wire.h>
 
+#include <Adafruit_TinyUSB.h>
+#include <Arduino.h>
+#include <MIDI.h>
+#include <midi_Defs.h>
+#include <midi_Message.h>
+#include <midi_Settings.h>
+
+// USB MIDI object
+Adafruit_USBD_MIDI usb_midi;
+MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);
+
 TFT_eSPI tft = TFT_eSPI();
 TouchLib touch(Wire, PIN_IIC_SDA, PIN_IIC_SCL, CTS820_SLAVE_ADDRESS, PIN_TOUCH_RES);
 
+void handleMessage(const midi::Message<128>& msg)
+{
+    Serial.print("Message: ");
+    Serial.print(msg.data1);
+    Serial.print(" ");
+    Serial.print(msg.data2);
+    Serial.print(" ");
+    Serial.println(msg.channel);
+
+    for (int i = 0; i < 100; i++) {
+        tft.drawRect(100 + i, 70, 30, 30, 0x07FF);
+        delay(10);
+        tft.drawRect(100 + i, 70, 30, 30, TFT_BLACK);
+    }
+}
+
 void setup(void)
 {
+    MIDI.begin(MIDI_CHANNEL_OMNI);
     Serial.begin(115200);
     // Serial.begin(230400);
     // Serial1.begin(460800);
@@ -36,6 +72,31 @@ void setup(void)
     }
 
     tft.fillScreen(TFT_BLACK);
+
+    log_e("log_e in init");
+    MIDI.setHandleNoteOn(handleNoteOn);
+    MIDI.setHandleMessage(handleMessage);
+}
+
+void handleNoteOn(byte channel, byte pitch, byte velocity)
+{
+    // Log when a note is pressed.
+    Serial.print("Note on: channel = ");
+    Serial.print(channel);
+
+    Serial.print(" pitch = ");
+    Serial.print(pitch);
+
+    Serial.print(" velocity = ");
+    Serial.println(velocity);
+
+    log_e("log_e handleNoteOn");
+
+    for (int i = 0; i < 100; i++) {
+        tft.drawRect(100 + i, 10, 30, 30, 0x07FF);
+        delay(10);
+        tft.drawRect(100 + i, 10, 30, 30, TFT_BLACK);
+    }
 }
 
 const byte numChars = 128;
@@ -113,7 +174,8 @@ void loop()
     if (touch.read()) {
         TP_Point t = touch.getPoint(0);
         Serial.printf("x:%04d y:%04d p:%04d \r\n", t.x, t.y, t.pressure);
-        // log_e("log_e");
+        log_e("log_e");
+        MIDI.sendNoteOn(60, 127, 1);
     }
 
     // if (Serial.available()) {
@@ -153,8 +215,8 @@ void loop()
     //     }
     // }
 
-    recvWithEndMarker();
-    showNewData();
+    // recvWithEndMarker();
+    // showNewData();
 
     delay(1);
 }
